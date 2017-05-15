@@ -1,0 +1,12 @@
+
+Addons used here: 
+
+- ofxGui
+- ofxMSACore
+- ofxMSAFluid
+- ofxMSAInteractiveObject
+- ofxOSC
+- ofxTuio
+- ofxXmlSettings
+
+

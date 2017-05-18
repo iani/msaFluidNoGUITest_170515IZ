@@ -164,7 +164,7 @@ void testApp::draw(){
     ////////////////////////////////////////////////////////////////
     ofColor centerColor = ofColor(85, 78, 68);
     ofColor edgeColor(0, 0, 0);
-    // ofBackgroundGradient(centerColor, edgeColor, OF_GRADIENT_CIRCULAR);
+    ofBackgroundGradient(centerColor, edgeColor, OF_GRADIENT_CIRCULAR);
     cam.begin();
 	
     ofPushMatrix();
@@ -174,6 +174,7 @@ void testApp::draw(){
     cam.end();
     glLineWidth(4);
 
+    /*
     ////////////////////////////////////////////////////////////////
   
     if(drawFluid) {
@@ -186,7 +187,7 @@ void testApp::draw(){
 	}
 	if(drawParticles)
       particleSystem.updateAndDraw(fluidSolver, ofGetWindowSize(), drawFluid);
-
+    */
 }
 
 

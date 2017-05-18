@@ -130,7 +130,7 @@ void testApp::update(){
 
       cout << "got message from OSC\n";
       
-      if(m.getAddress() == "/data"){
+      if (m.getAddress() == "/data"){
 
         cout << "message was data as expected\n";
 
@@ -140,7 +140,7 @@ void testApp::update(){
         addToFluid(mouseNorm, mouseVel, true, true);
         pMouse = eventPos;
         
-        //        mesh.addVertex(ofPoint(m.getArgAsFloat(0), m.getArgAsFloat(1), m.getArgAsFloat(2)));
+        // mesh.addVertex(ofPoint(m.getArgAsFloat(0), m.getArgAsFloat(1), m.getArgAsFloat(2)));
         // mesh.addColor(ofFloatColor(m.getArgAsFloat(3), m.getArgAsFloat(4), m.getArgAsFloat(5)));
         // addToFluid(
         //            // ofVec2f(m.getArgAsFloat(0), m.getArgAsFloat(1)),
@@ -149,28 +149,44 @@ void testApp::update(){
         //            ofVec2f(1, 20),
         //            true, true
         //            );
+      } else if (m.getAddress() == "/vertex") {
+        mesh.addVertex(ofPoint(m.getArgAsFloat(0), m.getArgAsFloat(1), m.getArgAsFloat(2)));
+        mesh.addColor(ofFloatColor(m.getArgAsFloat(3), m.getArgAsFloat(4), m.getArgAsFloat(5)));
       }
 	}
-	fluidSolver.update();
+
+    fluidSolver.update();
 }
 
 void testApp::draw(){
-	if(drawFluid) {
-        ofClear(0);
-		glColor3f(1, 1, 1);
-		fluidDrawer.draw(0, 0, ofGetWidth(), ofGetHeight());
+
+  
+    ////////////////////////////////////////////////////////////////
+    ofColor centerColor = ofColor(85, 78, 68);
+    ofColor edgeColor(0, 0, 0);
+    // ofBackgroundGradient(centerColor, edgeColor, OF_GRADIENT_CIRCULAR);
+    cam.begin();
+	
+    ofPushMatrix();
+    //  ofTranslate(-ofGetWidth() / 2, -ofGetHeight() / 2); 
+    mesh.draw();
+    ofPopMatrix();
+    cam.end();
+    glLineWidth(4);
+
+    ////////////////////////////////////////////////////////////////
+  
+    if(drawFluid) {
+      ofClear(0);
+      glColor3f(1, 1, 1);
+      fluidDrawer.draw(0, 0, ofGetWidth(), ofGetHeight());
 	} else {
-//		if(ofGetFrameNum()%5==0)
-            fadeToColor(0, 0, 0, 0.01);
+      //		if(ofGetFrameNum()%5==0)
+      fadeToColor(0, 0, 0, 0.01);
 	}
 	if(drawParticles)
-		particleSystem.updateAndDraw(fluidSolver, ofGetWindowSize(), drawFluid);
-	
-//	ofDrawBitmapString(sz, 50, 50);
+      particleSystem.updateAndDraw(fluidSolver, ofGetWindowSize(), drawFluid);
 
-#ifdef USE_GUI 
-	gui.draw();
-#endif
 }
 
 

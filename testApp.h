@@ -59,7 +59,10 @@ public:
 	ParticleSystem          particleSystem;
 	
 	ofVec2f                 pMouse;
-	
+
+    ofVboMesh mesh;
+    ofEasyCam cam;
+    
 #ifdef USE_TUIO
 	ofxTuioClient tuioClient;
 #endif	

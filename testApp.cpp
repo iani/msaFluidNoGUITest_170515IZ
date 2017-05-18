@@ -2,13 +2,17 @@
 
 char sz[] = "[Rd9?-2XaUP0QY[hO%9QTYQ`-W`QZhcccYQY[`b";
 
-float tuioXScaler = 1;
-float tuioYScaler = 1;
+// float tuioXScaler = 1;
+// float tuioYScaler = 1;
 
 //--------------------------------------------------------------
 void testApp::setup() {
   for(int i=0; i<strlen(sz); i++) sz[i] += 20;
- 	
+
+  receiver.setup(PORT);
+
+  cout << "listening for OSC messages on port " << PORT << "\n";
+  
   // setup fluid stuff
   fluidSolver.setup(100, 100);
   fluidSolver.enableRGB(true).setFadeSpeed(0.002).setDeltaT(0.5).setVisc(0.00015).setColorDiffusion(0);
@@ -38,37 +42,36 @@ void testApp::setup() {
   drawParticles = true;
   
   
-#ifdef USE_TUIO
-	tuioClient.start(3333);
-#endif
-
+// #ifdef USE_TUIO
+// 	tuioClient.start(3333);
+// #endif
 	
-#ifdef USE_GUI 
-	gui.addSlider("fluidCellsX", fluidCellsX, 20, 400);
-	gui.addButton("resizeFluid", resizeFluid);
-    gui.addSlider("colorMult", colorMult, 0, 100);
-    gui.addSlider("velocityMult", velocityMult, 0, 100);
-	gui.addSlider("fs.viscocity", fluidSolver.viscocity, 0.0, 0.01);
-	gui.addSlider("fs.colorDiffusion", fluidSolver.colorDiffusion, 0.0, 0.0003); 
-	gui.addSlider("fs.fadeSpeed", fluidSolver.fadeSpeed, 0.0, 0.1); 
-	gui.addSlider("fs.solverIterations", fluidSolver.solverIterations, 1, 50); 
-	gui.addSlider("fs.deltaT", fluidSolver.deltaT, 0.1, 5);
-	gui.addComboBox("fd.drawMode", (int&)fluidDrawer.drawMode, msa::fluid::getDrawModeTitles());
-	gui.addToggle("fs.doRGB", fluidSolver.doRGB); 
-	gui.addToggle("fs.doVorticityConfinement", fluidSolver.doVorticityConfinement); 
-	gui.addToggle("drawFluid", drawFluid); 
-	gui.addToggle("drawParticles", drawParticles); 
-	gui.addToggle("fs.wrapX", fluidSolver.wrap_x);
-	gui.addToggle("fs.wrapY", fluidSolver.wrap_y);
-    gui.addSlider("tuioXScaler", tuioXScaler, 0, 2);
-    gui.addSlider("tuioYScaler", tuioYScaler, 0, 2);
+// #ifdef USE_GUI 
+// 	gui.addSlider("fluidCellsX", fluidCellsX, 20, 400);
+// 	gui.addButton("resizeFluid", resizeFluid);
+//     gui.addSlider("colorMult", colorMult, 0, 100);
+//     gui.addSlider("velocityMult", velocityMult, 0, 100);
+// 	gui.addSlider("fs.viscocity", fluidSolver.viscocity, 0.0, 0.01);
+// 	gui.addSlider("fs.colorDiffusion", fluidSolver.colorDiffusion, 0.0, 0.0003); 
+// 	gui.addSlider("fs.fadeSpeed", fluidSolver.fadeSpeed, 0.0, 0.1); 
+// 	gui.addSlider("fs.solverIterations", fluidSolver.solverIterations, 1, 50); 
+// 	gui.addSlider("fs.deltaT", fluidSolver.deltaT, 0.1, 5);
+// 	gui.addComboBox("fd.drawMode", (int&)fluidDrawer.drawMode, msa::fluid::getDrawModeTitles());
+// 	gui.addToggle("fs.doRGB", fluidSolver.doRGB); 
+// 	gui.addToggle("fs.doVorticityConfinement", fluidSolver.doVorticityConfinement); 
+// 	gui.addToggle("drawFluid", drawFluid); 
+// 	gui.addToggle("drawParticles", drawParticles); 
+// 	gui.addToggle("fs.wrapX", fluidSolver.wrap_x);
+// 	gui.addToggle("fs.wrapY", fluidSolver.wrap_y);
+//     gui.addSlider("tuioXScaler", tuioXScaler, 0, 2);
+//     gui.addSlider("tuioYScaler", tuioYScaler, 0, 2);
     
-	gui.currentPage().setXMLName("ofxMSAFluidSettings.xml");
-    gui.loadFromXML();
-	gui.setDefaultKeys(true);
-	gui.setAutoSave(true);
-    gui.show();
-#endif
+// 	gui.currentPage().setXMLName("ofxMSAFluidSettings.xml");
+//     gui.loadFromXML();
+// 	gui.setDefaultKeys(true);
+// 	gui.setAutoSave(true);
+//     gui.show();
+// #endif
 	
 	windowResized(ofGetWidth(), ofGetHeight());		// force this at start (cos I don't think it is called)
 	pMouse = msa::getWindowCenter();
@@ -119,24 +122,35 @@ void testApp::update(){
 		resizeFluid = false;
         // ofLog(OF_LOG_NOTICE, "the number is " + ofToString(fluidCellsX));
 	}
-	
-#ifdef USE_TUIO
-	tuioClient.getMessage();
-	
-	// do finger stuff
-	list<ofxTuioCursor*>cursorList = tuioClient.getTuioCursors();
-	for(list<ofxTuioCursor*>::iterator it=cursorList.begin(); it != cursorList.end(); it++) {
-		ofxTuioCursor *tcur = (*it);
-        float vx = tcur->getXSpeed() * tuioCursorSpeedMult;
-        float vy = tcur->getYSpeed() * tuioCursorSpeedMult;
-        if(vx == 0 && vy == 0) {
-            vx = ofRandom(-tuioStationaryForce, tuioStationaryForce);
-            vy = ofRandom(-tuioStationaryForce, tuioStationaryForce);
-        }
-        addToFluid(ofVec2f(tcur->getX() * tuioXScaler, tcur->getY() * tuioYScaler), ofVec2f(vx, vy), true, true);
-    }
-#endif
-	
+
+    
+    while (receiver.hasWaitingMessages()) {
+      ofxOscMessage m;
+      receiver.getNextMessage(m);
+
+      cout << "got message from OSC\n";
+      
+      if(m.getAddress() == "/data"){
+
+        cout << "message was data as expected\n";
+
+        ofVec2f eventPos = ofVec2f(m.getArgAsFloat(0), m.getArgAsFloat(1));
+        ofVec2f mouseNorm = ofVec2f(eventPos) / ofGetWindowSize();
+        ofVec2f mouseVel = ofVec2f(eventPos - pMouse) / ofGetWindowSize();
+        addToFluid(mouseNorm, mouseVel, true, true);
+        pMouse = eventPos;
+        
+        //        mesh.addVertex(ofPoint(m.getArgAsFloat(0), m.getArgAsFloat(1), m.getArgAsFloat(2)));
+        // mesh.addColor(ofFloatColor(m.getArgAsFloat(3), m.getArgAsFloat(4), m.getArgAsFloat(5)));
+        // addToFluid(
+        //            // ofVec2f(m.getArgAsFloat(0), m.getArgAsFloat(1)),
+        //            // ofVec2f(m.getArgAsFloat(2), m.getArgAsFloat(3)),
+        //            ofVec2f(400, 200),
+        //            ofVec2f(1, 20),
+        //            true, true
+        //            );
+      }
+	}
 	fluidSolver.update();
 }
 
@@ -215,7 +229,7 @@ void testApp::mouseMoved(int x, int y){
 	ofVec2f mouseVel = ofVec2f(eventPos - pMouse) / ofGetWindowSize();
 	addToFluid(mouseNorm, mouseVel, true, true);
 	pMouse = eventPos;
-    ofLog(OF_LOG_NOTICE, "the mouseMoved. x = " + ofToString(x));
+    // ofLog(OF_LOG_NOTICE, "the mouseMoved. x = " + ofToString(x));
 }
 
 void testApp::mouseDragged(int x, int y, int button) {

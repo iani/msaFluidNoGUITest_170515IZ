@@ -5,10 +5,11 @@
 #include "ParticleSystem.h"
 
 #include "ofMain.h"
+#include "ofxOsc.h"
 
 // comment this line out if you don't wanna use TUIO
 // you will need ofxTUIO & ofxOsc
-#define USE_TUIO		
+// #define USE_TUIO		
 
 // comment this line out if you don't wanna use the GUI
 // you will need ofxSimpleGuiToo, ofxMSAInteractiveObject & ofxXmlSettings
@@ -16,16 +17,19 @@
 // #define USE_GUI
 
 
-#ifdef USE_TUIO
-#include "ofxTuio.h"
-#define tuioCursorSpeedMult				0.5	// the iphone screen is so small, easy to rack up huge velocities! need to scale down 
-#define tuioStationaryForce				0.001f	// force exerted when cursor is stationary
-#endif
+/* #ifdef USE_TUIO */
+/* #include "ofxTuio.h" */
+/* #define tuioCursorSpeedMult				0.5	// the iphone screen is so small, easy to rack up huge velocities! need to scale down  */
+/* #define tuioStationaryForce				0.001f	// force exerted when cursor is stationary */
+/* #endif */
 
 
-#ifdef USE_GUI 
-// #include "ofxSimpleGuiToo.h"
-#endif
+/* #ifdef USE_GUI  */
+/* // #include "ofxSimpleGuiToo.h" */
+/* #endif */
+
+#define HOST "localhost"
+#define PORT 12345
 
 class testApp : public ofBaseApp {
 public:
@@ -40,7 +44,7 @@ public:
 	void fadeToColor(float r, float g, float b, float speed);
 	void addToFluid(ofVec2f pos, ofVec2f vel, bool addColor, bool addForce);
 
-    
+    ofxOscReceiver receiver;
     
     float                   colorMult;
     float                   velocityMult;

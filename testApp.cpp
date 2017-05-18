@@ -6,23 +6,38 @@ float tuioXScaler = 1;
 float tuioYScaler = 1;
 
 //--------------------------------------------------------------
-void testApp::setup() {	 
-	for(int i=0; i<strlen(sz); i++) sz[i] += 20;
+void testApp::setup() {
+  for(int i=0; i<strlen(sz); i++) sz[i] += 20;
+ 	
+  // setup fluid stuff
+  fluidSolver.setup(100, 100);
+  fluidSolver.enableRGB(true).setFadeSpeed(0.002).setDeltaT(0.5).setVisc(0.00015).setColorDiffusion(0);
+  fluidDrawer.setup(&fluidSolver);
 	
-	// setup fluid stuff
-	fluidSolver.setup(100, 100);
-    fluidSolver.enableRGB(true).setFadeSpeed(0.002).setDeltaT(0.5).setVisc(0.00015).setColorDiffusion(0);
-	fluidDrawer.setup(&fluidSolver);
+  fluidCellsX			= 150;
 	
-	fluidCellsX			= 150;
+  drawFluid			= true;
+  drawParticles		= true;
 	
-	drawFluid			= true;
-	drawParticles		= true;
-	
-	ofSetFrameRate(60);
-	ofBackground(0, 0, 0);
-	ofSetVerticalSync(false);
-	
+  ofSetFrameRate(60);
+  ofBackground(0, 0, 0);
+  ofSetVerticalSync(false);
+
+  fluidCellsX = 120;
+  resizeFluid = true;
+  colorMult = 98.5;
+  velocityMult = 18.5;
+  fluidSolver.viscocity = 0.0001;
+  fluidSolver.colorDiffusion = 0;
+  fluidSolver.fadeSpeed = 0.005;
+  fluidSolver.solverIterations = 15;
+  fluidSolver.deltaT = 1.2515;
+
+  fluidDrawer.setDrawMode(msa::fluid::kDrawColor);
+  fluidSolver.doRGB = true;
+  drawParticles = true;
+  
+  
 #ifdef USE_TUIO
 	tuioClient.start(3333);
 #endif
@@ -102,7 +117,7 @@ void testApp::update(){
 		fluidSolver.setSize(fluidCellsX, fluidCellsX / msa::getWindowAspectRatio());
 		fluidDrawer.setup(&fluidSolver);
 		resizeFluid = false;
-        ofLog(OF_LOG_NOTICE, "the number is " + ofToString(fluidCellsX));
+        // ofLog(OF_LOG_NOTICE, "the number is " + ofToString(fluidCellsX));
 	}
 	
 #ifdef USE_TUIO
@@ -200,6 +215,7 @@ void testApp::mouseMoved(int x, int y){
 	ofVec2f mouseVel = ofVec2f(eventPos - pMouse) / ofGetWindowSize();
 	addToFluid(mouseNorm, mouseVel, true, true);
 	pMouse = eventPos;
+    ofLog(OF_LOG_NOTICE, "the mouseMoved. x = " + ofToString(x));
 }
 
 void testApp::mouseDragged(int x, int y, int button) {

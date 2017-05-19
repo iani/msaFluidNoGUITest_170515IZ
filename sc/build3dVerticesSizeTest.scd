@@ -10,6 +10,17 @@
 	}
 }.fork
 
+//: Testing random points
+{
+	var addr;
+	addr = NetAddr ("192.168.2.89", 12345);
+	(1 .. 79000) do: { | index |
+		index.postln;
+		addr.sendMsg ('/vertex', 900.0.rand, 800.0.rand, 1200.0.rand.neg, 1.0.rand, 1.0.rand, 1.0.rand);
+		0.1.wait;
+	}
+}.fork
+
 //: Testing points within a range to see how cam and translation works
 {
 	var addr;
